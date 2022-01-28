@@ -1,7 +1,3 @@
-/*
-    
-*/
-
 #include <SPI.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -106,12 +102,12 @@ void setup() {
     if (client.connect(server, 80)) {
         Serial.println("connected to server");
         // Make a HTTP request:
-        client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=57600&newStatus=0");
+        client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&newStatus=0");
         client.println("Host: op-dev.icam.fr");
         client.println("Connection: close");
         client.println();
     }
-
+    
     int x;
     int p;
     std::cout << "Would you enter the prediction manualy? Yes/No" << std::endl;
