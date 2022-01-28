@@ -102,7 +102,7 @@ void setup() {
     if (client.connect(server, 80)) {
         Serial.println("connected to server");
         // Make a HTTP request:
-        client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&newStatus=0");
+        client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&newStatus=1");
         client.println("Host: op-dev.icam.fr");
         client.println("Connection: close");
         client.println();
@@ -225,7 +225,7 @@ void loop() {
     if (p = 0)  {
         if (value <= 100)   {
             Serial.println("Water level is empty.");
-            client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=57600&newStatus=2");
+            client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&newStatus=2");
             Serial.println("Predictions forbiden !");
             Serial.println("Experience Finished !");
         }
@@ -250,7 +250,7 @@ void loop() {
     if (p = 1)  {
         if (value <= 100)   {
             Serial.println("Water level is empty.");
-            client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=57600&newStatus=2");
+            client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&newStatus=2");
             Serial.println("Predictions forbiden !");
             Serial.println("Experience Finished !");
         }
