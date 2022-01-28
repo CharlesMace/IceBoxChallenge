@@ -12,7 +12,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature sensor 
 DallasTemperature sensors(&oneWire);
 
-#define POWER_PIN  7
+#define POWER_PIN  8
 #define SIGNAL_PIN A5
 
 int value = 0; // variable to store the sensor value

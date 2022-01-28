@@ -1,3 +1,33 @@
+/*
+
+  Web client
+
+ This sketch connects to a website (http://www.google.com)
+
+ using the WiFi module.
+
+ This example is written for a network using WPA encryption. For
+
+ WEP or WPA, change the Wifi.begin() call accordingly.
+
+ This example is written for a network using WPA encryption. For
+
+ WEP or WPA, change the Wifi.begin() call accordingly.
+
+ Circuit:
+
+ * Board with NINA module (Arduino MKR WiFi 1010, MKR VIDOR 4000 and UNO WiFi Rev.2)
+
+ created 13 July 2010
+
+ by dlf (Metodo2 srl)
+
+ modified 31 May 2012
+
+ by Tom Igoe
+
+ */
+
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include "secrets.h"
@@ -70,7 +100,7 @@ void setup() {
   if (client.connect(server, 80)) {
     Serial.println("connected to server");
     // Make a HTTP request:
-    client.println("GET /~icebox/changeExperienceStatus.php?idexperience=15&secretkey=fa49&prediction=57600&newStatus=1");
+    client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=57600");
     client.println("Host: op-dev.icam.fr");
     client.println("Connection: close");
     client.println();
