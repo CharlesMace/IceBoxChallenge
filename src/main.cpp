@@ -1,51 +1,60 @@
-#include <SPI.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <WiFiNINA.h>
-#include "secrets.h"
-#include "ThingSpeak.h"
+/*
+    Icebox Project is a challenge provided by Passive House Canada.
+    The website https://iceboxchallenge.com/ gives all informations on this project.
 
-// Data wire is connected to the Arduino Uno Wifi Rev2
+    This code was created by Charles Macé @ Recife, PE, Brazil during an adadption of this challenge by Icam.
+    The goal was to provide predictions on a web server to calculate when the ice block will completly melt.
+
+    Use of this code is completly free.
+
+    Charles Macé - Student @ Icam site de Lille - January 2022.
+*/
+
+#include <SPI.h>                    // importing the SPI library
+#include <OneWire.h>                // importing the OneWire library
+#include <DallasTemperature.h>      // importing the DallasTemperature library
+#include <WiFiNINA.h>               // importing the WiFiNINA library
+#include "secrets.h"                // importing the informations included in secrets.h
+#include "ThingSpeak.h"             // importing the ThingSpeak components available on their website
+
+// Temperature sensors data wire is connected to the Arduino Uno Wifi Rev2
 #define ONE_WIRE_BUS 7
 // Setup a oneWire instance to communicate with a OneWire device
 OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature sensor 
 DallasTemperature sensors(&oneWire);
-
+// Power of the water level sensor is connected to the pin 8 to provide PWM
 #define POWER_PIN  8
+// A5 is the pin used to collect signal from the water level sensor
 #define SIGNAL_PIN A5
 
 nt value = 0; // variable to store the sensor value
 
+// These device address are taken from the arduino with the code test\Sensors\GettingtheDS18B20SensorAddress.cpp
 DeviceAddress sensor1 = { 0x28, 0xBC, 0xB9, 0x01, 0x00, 0x00, 0x00, 0x57 }; 
 DeviceAddress sensor2 = { 0x28, 0xE9, 0xB4, 0x01, 0x00, 0x00, 0x00, 0x7E }; 
 DeviceAddress sensor3 = { 0x28, 0xDD, 0xD0, 0x01, 0x00, 0x00, 0x00, 0x41 }; 
 DeviceAddress sensor4 = { 0x28, 0x83, 0xE3, 0x01, 0x00, 0x00, 0x00, 0xB6 };
 
-int value = 0; // variable to store the sensor value
-
-///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = SECRET_SSID;        // your network SSID (name)
-char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;            // your network key Index number (needed only for WEP)
-
-int status = WL_IDLE_STATUS;
-// if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "op-dev.icam.fr";    // name address for Google (using DNS)
+int value = 0;                      // variable to store the sensor value
+char ssid[] = SECRET_SSID;          // your network SSID (name)
+char pass[] = SECRET_PASS;          // your network password (use for WPA, or use as key for WEP)
+int keyIndex = 0;                   // your network key Index number (needed only for WEP)
+int status = WL_IDLE_STATUS;        // status will serve to know the status
+char server[] = "op-dev.icam.fr";   // name address for op-dev.icam.fr (using DNS)
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient client;
 
-int number1 = 0;
-int number2 = random(0,100);
-int number3 = random(0,100);
-int number4 = random(0,100);
-int number5 = random(0,100);
+int number1 = 0;                    // number1 will serve to stock sensors final data
+int number2 = random(0,100);        // number2 will serve to stock sensors final data
+int number3 = random(0,100);        // number3 will serve to stock sensors final data
+int number4 = random(0,100);        // number4 will serve to stock sensors final data
+int number5 = random(0,100);        // number5 will serve to stock sensors final data
 
+//declarations of the function printWifiStatus
 void printWifiStatus() {
     // print the SSID of the network you're attached to:
     Serial.print("SSID: ");
@@ -122,42 +131,36 @@ void setup() {
     }
 }
 
+// Declaration for KnowThePrediction() function
 void KnowThePrediction() {
+    // Variables useful for the physical calculation
     int tho = -15257,64;
     int T;
     int Tinf = 25;
     int Tf;
     int t;
-
     Serial.print("Requesting temperatures...");
     sensors.requestTemperatures(); // Send the command to get temperatures
     Serial.println("DONE");
-  
     Serial.print("Sensor 1(*C): ");
     Serial.println(sensors.getTempC(sensor1)); 
     number1 = sensors.getTempC(sensor1); 
- 
     Serial.print("Sensor 2(*C): ");
     Serial.println(sensors.getTempC(sensor2)); 
     number2 = sensors.getTempC(sensor2);  
-  
     Serial.print("Sensor 3(*C): ");
     Serial.println(sensors.getTempC(sensor3));    
     number3 = sensors.getTempC(sensor3); 
-
     Serial.print("Sensor 4(*C): ");
     Serial.println(sensors.getTempC(sensor4));  
     number4 = sensors.getTempC(sensor4); 
-    
     Tf = number4;
     T = number2;
-
     t = tho * log10((T - Tinf) / (Tf - Tinf))
 }
 
 void loop() {
-    KnowThePrediction();
-
+    KnowThePrediction();            // calling the function KnowThePrediction()
     digitalWrite(POWER_PIN, HIGH);  // turn the sensor ON
     delay(10);                      // wait 10 milliseconds
     value = analogRead(SIGNAL_PIN); // read the analog value from sensor
@@ -166,26 +169,32 @@ void loop() {
     Serial.print("Sensor value: ");
     Serial.println(value);
 
+    // asking for the user if he wants to make his own prediction or get the prediction from the code
     int r;
     std::cout << "What is you prediction? (Time in second)" << std::endl;
     cin >> r;
-
+    
+    // Creating the loop that will initialize the data sending and updating the prediction.
     if (p = 0)  {
-        if (value <= 100)   {
+        // if the value incoming is too low
+        if (value <= 100)   {           
             Serial.println("Water level is empty.");
             client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=" + r);
             Serial.println("Predictions allowed !");
         }
+        // if the value incoming is low
         else if (value > 100 && value <= 300) {
             Serial.println("Water level is low.");
             client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=" + r);
             Serial.println("Predictions allowed !");
         }
+        // if the value incoming is medium
         else if (value > 300 && value <= 330)   {
             Serial.println("Water level is medium.");
             client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=" + r);
             Serial.println("Predictions allowed !");
         }
+        // if the value incoming is high
         else if (value >= 330)  {
             Serial.println("Water level is high.");
             client.println("GET /~icebox/createPrediction.php?idexperience=15&secretkey=fa49&prediction=" + r);
@@ -194,6 +203,7 @@ void loop() {
         Serial.println("EEOM sented to server successfully !");
     }
 
+    // Then repeating the same process for each time
     if (p = 1)  {
         if (value <= 100)   {
             Serial.println("Water level is empty.");
